@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/fragment_container"/>
+
+    <Button
+        android:id="@+id/upload_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="Import mission"
+        android:textSize="14sp"
+        android:layout_marginTop="15dp"
+        android:background="#457894"/>
+
+    <Button
+        android:id="@+id/set_arming_check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="Arming Check"
+        android:textSize="14sp"
+        android:background="#4681b6"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="10dp"/>
+
+    <Button
+        android:id="@+id/connect_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="@string/connect"
+        android:textSize="14sp"
+        android:layout_below="@id/upload_btn"
+        android:layout_marginTop="20dp"
+        android:background="#985637"/>
+
+    <Button
+        android:id="@+id/upload_mission"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="Upload mission"
+        android:textSize="14sp"
+        android:layout_below="@id/connect_btn"
+        android:layout_marginTop="20dp"
+        android:background="#872345"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/arm_btn"
+        android:text="arm"
+        android:padding="10dp"
+        android:background="#849347"
+        android:layout_below="@+id/upload_mission"
+        android:layout_marginTop="20dp"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/take_off"
+        android:text="Take off"
+        android:padding="10dp"
+        android:background="#156447"
+        android:layout_below="@+id/arm_btn"
+        android:layout_marginTop="20dp"/>
+
+    <Spinner
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:id="@+id/mode_dropdown"
+        android:layout_below="@id/take_off"
+        android:layout_marginTop="15dp"
+        android:spinnerMode="dropdown"/>
+
+</RelativeLayout>

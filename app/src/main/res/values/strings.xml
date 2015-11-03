@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">SimpleApp</string>
+    <string name="acces_token">pk.eyJ1IjoibWFydGhhbG9lcmEiLCJhIjoiY2lmYTZibmtiMG1vd3I3bHh3d2NuendzeSJ9.4p68TnK-kAOq5bSAmcRMZQ</string>
+    <string name="connect">Connect :)</string>
+    <string name="disconnect">Disconnect :(</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="connect_to_vehicle">Connect to a vehicle first!</string>
+    <string name="cmdr_mission_extension">cmdr</string>
+    <array name="modes_array">
+        <item>Stabilize</item>
+        <item>Guided</item>
+        <item>Auto</item>
+        <item>Acro</item>
+        <item>RTL</item>
+        <item>Sport</item>
+        <item>Alt Hold</item>
+        <item>Loiter</item>
+        <item>PosHold</item>
+        <item>Brake</item>
+    </array>
+    <array name="arming_check_values">
+        <item>Disabled</item>
+        <item>Enabled</item>
+    </array>
+    <string name="mission_test"></string>
+</resources>
