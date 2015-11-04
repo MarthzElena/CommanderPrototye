@@ -1,5 +1,6 @@
 package main.java.com.skycatch.simpleapp;
 
+import android.gesture.GestureOverlayView;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -10,12 +11,18 @@ import android.graphics.drawable.LayerDrawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.almeros.android.multitouch.gesturedetectors.BaseGestureDetector;
+import com.almeros.android.multitouch.gesturedetectors.MoveGestureDetector;
+import com.almeros.android.multitouch.gesturedetectors.MoveGestureDetector.SimpleOnMoveGestureListener;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.PolygonOptions;
@@ -38,7 +45,7 @@ import java.util.List;
 /**
  * Created by marthaelena on 11/3/15.
  */
-public class MapboxFragment  extends Fragment {
+public class MapboxFragment  extends Fragment{
 
     final static double DEFAULT_LAT = 20.6737777;
     final static double DEFAULT_LNG = -103.4054535;
@@ -54,7 +61,30 @@ public class MapboxFragment  extends Fragment {
     private PolylineOptions drawing = new PolylineOptions();
     private PolylineOptions finalLine = new PolylineOptions();
     private SpriteFactory spriteFactory;
-    private List<Marker> mapMarkers;
+
+    MoveGestureDetector moveGestureDetector;
+
+    MapView.OnMapLongClickListener mapLongClickListener = new MapView.OnMapLongClickListener() {
+        @Override
+        public void onMapLongClick(LatLng point) {
+            Log.v("long", point.getLatitude() + ", " + point.getLongitude());
+
+            mapView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (event.getAction() == MotionEvent.ACTION_MOVE) {
+
+                        Log.v("Sfadsf","sadfadfa");
+                    } else {
+                        mapView.setOnTouchListener(null);
+                    }
+                    return true;
+                }
+            });
+
+        }
+    };
+
 
     MapView.OnMapClickListener clickListener = new MapView.OnMapClickListener() {
         @Override
@@ -94,6 +124,7 @@ public class MapboxFragment  extends Fragment {
 
         mapView.setOnMapClickListener(clickListener);
         mapView.setOnMarkerClickListener(markerListener);
+        mapView.setOnMapLongClickListener(mapLongClickListener);
 
         spriteFactory = new SpriteFactory(mapView);
 
@@ -111,7 +142,6 @@ public class MapboxFragment  extends Fragment {
         clearMission();
         moveMaptoZone(new LatLng(mission.location.getLatitude(), mission.location.getLongitude()));
 
-        ArrayList<MarkerOptions> markersList= new ArrayList<>();
         int markerCount = 0;
 
         /** Paint the zones **/
@@ -159,13 +189,12 @@ public class MapboxFragment  extends Fragment {
                         marker.icon(spriteFactory.fromDrawable(customizedMarker(R.drawable.gray_circle, String.valueOf(markerCount))));
                     }
                     markerCount++;
-                    markersList.add(marker);
+                    mapView.addMarker(marker);
                 }
                 routeLine.color(color);
                 color = color == WHITE ? GRAY : WHITE;
 
                 mapView.addPolyline(routeLine);
-                mapMarkers = mapView.addMarkers(markersList);
             }
 
         }
@@ -195,9 +224,6 @@ public class MapboxFragment  extends Fragment {
         polygonPoints = new ArrayList<>();
         drawing = new PolylineOptions();
         finalLine = new PolylineOptions();
-        if (mapMarkers != null) {
-            mapView.removeAnnotations(mapMarkers);
-        }
     }
 
     public Drawable customizedMarker(int markerImageId, String number) {
