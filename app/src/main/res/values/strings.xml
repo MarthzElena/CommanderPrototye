@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">SimpleApp</string>
     <string name="acces_token">pk.eyJ1IjoibWFydGhhbG9lcmEiLCJhIjoiY2lmYTZibmtiMG1vd3I3bHh3d2NuendzeSJ9.4p68TnK-kAOq5bSAmcRMZQ</string>
-    <string name="connect">Connect :)</string>
+    <string name="connect">Connect</string>
     <string name="disconnect">Disconnect :(</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>

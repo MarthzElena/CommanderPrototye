@@ -1,0 +1,17 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+    <item
+        android:id="@+id/action_arm"
+        android:title="Arm"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_flight_mode"
+        android:title="Flight mode"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_upload_mission"
+        android:title="Upload mission"
+        app:showAsAction="never" />
+</menu>

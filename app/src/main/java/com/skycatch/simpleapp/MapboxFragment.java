@@ -1,28 +1,28 @@
 package main.java.com.skycatch.simpleapp;
 
+import android.content.Context;
 import android.gesture.GestureOverlayView;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.MotionEventCompat;
+import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.DragEvent;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Toast;
 
-import com.almeros.android.multitouch.gesturedetectors.BaseGestureDetector;
-import com.almeros.android.multitouch.gesturedetectors.MoveGestureDetector;
-import com.almeros.android.multitouch.gesturedetectors.MoveGestureDetector.SimpleOnMoveGestureListener;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.PolygonOptions;
@@ -31,11 +31,14 @@ import com.mapbox.mapboxsdk.annotations.SpriteFactory;
 import com.mapbox.mapboxsdk.constants.Style;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.views.MapView;
+import com.o3dr.services.android.lib.coordinate.LatLong;
 import com.skycatch.Coordinate2D;
 import com.skycatch.GeoJsonPolygonFeature;
 import com.skycatch.MissionPlanner;
 import com.skycatch.MissionPlannerResult;
+import com.skycatch.Point2D;
 import com.skycatch.Route;
+import com.skycatch.Simplify;
 import com.skycatch.Waypoint;
 import com.skycatch.simpleapp.R;
 
@@ -45,7 +48,7 @@ import java.util.List;
 /**
  * Created by marthaelena on 11/3/15.
  */
-public class MapboxFragment  extends Fragment{
+public class MapboxFragment  extends Fragment implements GestureOverlayView.OnGestureListener{
 
     final static double DEFAULT_LAT = 20.6737777;
     final static double DEFAULT_LNG = -103.4054535;
@@ -57,48 +60,16 @@ public class MapboxFragment  extends Fragment{
 
     private MapView mapView;
     private MarkerOptions uav;
-    private ArrayList<Coordinate2D> polygonPoints = new ArrayList<>();
-    private PolylineOptions drawing = new PolylineOptions();
-    private PolylineOptions finalLine = new PolylineOptions();
     private SpriteFactory spriteFactory;
 
-    MoveGestureDetector moveGestureDetector;
+    private GestureOverlayView mGestureOverlayView;
 
-    MapView.OnMapLongClickListener mapLongClickListener = new MapView.OnMapLongClickListener() {
-        @Override
-        public void onMapLongClick(LatLng point) {
-            Log.v("long", point.getLatitude() + ", " + point.getLongitude());
-
-            mapView.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    if (event.getAction() == MotionEvent.ACTION_MOVE) {
-
-                        Log.v("Sfadsf","sadfadfa");
-                    } else {
-                        mapView.setOnTouchListener(null);
-                    }
-                    return true;
-                }
-            });
-
-        }
-    };
-
-
-    MapView.OnMapClickListener clickListener = new MapView.OnMapClickListener() {
-        @Override
-        public void onMapClick(LatLng point) {
-            startDrawing(point);
-        }
-    };
-
-    MapView.OnMarkerClickListener markerListener = new MapView.OnMarkerClickListener() {
-        @Override
-        public boolean onMarkerClick(Marker marker) {
-            return finishDrawing(marker.getPosition());
-        }
-    };
+//    MapView.OnMarkerClickListener markerListener = new MapView.OnMarkerClickListener() {
+//        @Override
+//        public boolean onMarkerClick(Marker marker) {
+//            return finishDrawing(marker.getPosition());
+//        }
+//    };
 
     public MapboxFragment() {}
 
@@ -122,11 +93,13 @@ public class MapboxFragment  extends Fragment{
         }
         mapView.setZoomLevel(12);
 
-        mapView.setOnMapClickListener(clickListener);
-        mapView.setOnMarkerClickListener(markerListener);
-        mapView.setOnMapLongClickListener(mapLongClickListener);
+//        mapView.setOnMarkerClickListener(markerListener);
 
         spriteFactory = new SpriteFactory(mapView);
+
+        mGestureOverlayView = (GestureOverlayView) view.findViewById(R.id.gesture_overlay);
+        mGestureOverlayView.addOnGestureListener(this);
+        mGestureOverlayView.setEnabled(false);
 
         Toast.makeText(getContext(), "Tap on the map to start drawing", Toast.LENGTH_SHORT).show();
 
@@ -221,9 +194,6 @@ public class MapboxFragment  extends Fragment{
     public void clearMission() {
         //remove previous missions
         mapView.removeAllAnnotations();
-        polygonPoints = new ArrayList<>();
-        drawing = new PolylineOptions();
-        finalLine = new PolylineOptions();
     }
 
     public Drawable customizedMarker(int markerImageId, String number) {
@@ -245,70 +215,80 @@ public class MapboxFragment  extends Fragment{
         }
     }
 
-    public void startDrawing(LatLng point) {
-        if (drawing.getPoints().isEmpty()) {
-            Toast.makeText(getContext(), "Tap on the first marker to finish drawing", Toast.LENGTH_SHORT).show();
-        }
-
-        Coordinate2D coordinate2D = new Coordinate2D(point.getLatitude(), point.getLongitude());
-        polygonPoints.add(coordinate2D);
-
-        MarkerOptions marker = new MarkerOptions()
-                .position(point)
-                .icon(spriteFactory.fromDrawable(getResources().getDrawable(R.drawable.green_marker)));
-        mapView.addMarker(marker);
-
-        drawing.add(point);
-        drawing.width(5);
-        mapView.addPolyline(drawing);
+    public void enableDrawingMode(boolean value) {
+        Toast.makeText(getContext(), "Drawing mode: ON", Toast.LENGTH_SHORT).show();
+        mGestureOverlayView.setEnabled(value);
     }
 
-    public boolean finishDrawing(LatLng lastMarkerPosition) {
-        if (lastMarkerPosition.getLatitude() == polygonPoints.get(0).getLatitude()
-                && lastMarkerPosition.getLongitude() == polygonPoints.get(0).getLongitude()) {
+    @Override
+    public void onGestureStarted(GestureOverlayView overlay, MotionEvent event) {
 
-            finalLine = new PolylineOptions();
-            finalLine.width(5);
-            finalLine.add(drawing.getPoints().get(drawing.getPoints().size()-1));
-            finalLine.add(lastMarkerPosition);
-            mapView.addPolyline(finalLine);
-            mapView.refreshDrawableState();
+    }
 
-            GeoJsonPolygonFeature bounds = GeoJsonPolygonFeature.createWithCoordinates(polygonPoints);
-            Waypoint takeoff = Waypoint.createWithCoordinate(polygonPoints.get(1), 60.0, 0.0, "");
-            double legAngle = 360.0;
-            double overlap = 60.0;
-            String resolution = "5 cm";
-            boolean terrain = false;
-            String uavId = "skc-bd-sky1";
+    @Override
+    public void onGesture(GestureOverlayView overlay, MotionEvent event) {
 
-            MissionPlanner planner = MissionPlanner.create();
-            MissionPlannerResult result = planner.plan(bounds, legAngle, overlap, resolution, takeoff, terrain, uavId);
-            int color = WHITE;
-            if (result.errorCode() == MissionPlannerResult.ERROR_CODE_SUCCESS) {
-                for (Route route : result.routes()) {
-                    PolylineOptions routeLine = new PolylineOptions();
+    }
 
-                    for (Waypoint waypoint : route.waypoints() ) {
-                        LatLng point = new LatLng(waypoint.coordinate().getLatitude(), waypoint.coordinate().getLongitude());
-                        routeLine.add(point);
-                    }
-                    routeLine.width(3);
-                    routeLine.color(color);
-                    color = color == WHITE ? GRAY : WHITE;
-                    mapView.addPolyline(routeLine);
+    @Override
+    public void onGestureEnded(GestureOverlayView overlay, MotionEvent event) {
+        mGestureOverlayView.setEnabled(false);
+
+        ArrayList<Point2D> path = new ArrayList<>();
+        ArrayList<Coordinate2D> polygonPoints = new ArrayList<>();
+        PolylineOptions figure = new PolylineOptions();
+        figure.color(Color.argb(255, 95, 166, 189));
+        figure.width(5);
+
+        float[] points = mGestureOverlayView.getGesture().getStrokes().get(0).points;
+        for (int i = 0; i < points.length; i += 2) {
+            path.add(new Point2D(points[i], points[i + 1]));
+        }
+        ArrayList<Point2D> simplifiedPoints = Simplify.simplifyPoints(path, 15.0f);
+        for (Point2D point : simplifiedPoints) {
+            PointF pointF = new PointF((float) point.getX(), (float) point.getY());
+            LatLng coordinate = mapView.fromScreenLocation(pointF);
+            figure.add(coordinate);
+            polygonPoints.add(new Coordinate2D(coordinate.getLatitude(), coordinate.getLongitude()));
+        }
+        figure.add(figure.getPoints().get(0));
+        mapView.addPolyline(figure);
+
+        GeoJsonPolygonFeature bounds = GeoJsonPolygonFeature.createWithCoordinates(polygonPoints);
+        Waypoint takeoff = Waypoint.createWithCoordinate(polygonPoints.get(0), 60.0, 0.0, "");
+        double legAngle = 360.0;
+        double overlap = 60.0;
+        String resolution = "5 cm";
+        boolean terrain = false;
+        String uavId = "skc-bd-sky1";
+
+        MissionPlanner planner = MissionPlanner.create();
+        MissionPlannerResult result = planner.plan(bounds, legAngle, overlap, resolution, takeoff, terrain, uavId);
+        int color = WHITE;
+        if (result.errorCode() == MissionPlannerResult.ERROR_CODE_SUCCESS) {
+            for (Route route : result.routes()) {
+                PolylineOptions routeLine = new PolylineOptions();
+                for (Waypoint waypoint : route.waypoints() ) {
+                    LatLng point = new LatLng(waypoint.coordinate().getLatitude(), waypoint.coordinate().getLongitude());
+                    routeLine.add(point);
                 }
-            } else {
-                Log.v("ERROR", "!!!");
+                routeLine.width(3);
+                routeLine.color(color);
+                color = color == WHITE ? GRAY : WHITE;
+                mapView.addPolyline(routeLine);
             }
-
-            polygonPoints = new ArrayList<>();
-            drawing = new PolylineOptions();
-            finalLine = new PolylineOptions();
-            return true;
+            MarkerOptions baseMarker = new MarkerOptions();
+            baseMarker.icon(spriteFactory.fromDrawable(getResources().getDrawable(R.drawable.baseicon)));
+            baseMarker.position(new LatLng(takeoff.coordinate().getLatitude(), takeoff.coordinate().getLongitude()));
+            mapView.addMarker(baseMarker);
         } else {
-            return false;
+            Log.v("ERROR", "!!!");
         }
+
     }
 
+    @Override
+    public void onGestureCancelled(GestureOverlayView overlay, MotionEvent event) {
+
+    }
 }

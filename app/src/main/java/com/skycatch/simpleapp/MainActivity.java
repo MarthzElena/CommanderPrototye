@@ -4,16 +4,13 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import java.io.BufferedInputStream;
@@ -31,7 +28,11 @@ import main.java.com.skycatch.simpleapp.ObjectConverter;
 public class MainActivity extends FragmentActivity {
 
 
-    private Button importMission;
+    private ImageButton importMission;
+    private ImageButton drawMission;
+    private ImageButton appSettings;
+    private Button connectToUAV;
+    private Button takeOff;
 
     private CharSequence[] chars;
     private String path = "";
@@ -44,7 +45,7 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        importMission = (Button) findViewById(R.id.upload_btn);
+        setupUI();
 
         //Create app folder
         if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
@@ -90,6 +91,13 @@ public class MainActivity extends FragmentActivity {
             }
         });
 
+        drawMission.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mapboxFragment.enableDrawingMode(true);
+            }
+        });
+
     }
 
     DialogInterface.OnClickListener dialoglistener = new DialogInterface.OnClickListener() {
@@ -120,10 +128,18 @@ public class MainActivity extends FragmentActivity {
         return json;
     }
 
+    public void setupUI() {
+        importMission = (ImageButton) findViewById(R.id.upload_btn);
+        drawMission = (ImageButton) findViewById(R.id.action_draw);
+        appSettings = (ImageButton) findViewById(R.id.action_settings);
+        connectToUAV = (Button) findViewById(R.id.connect_btn);
+        takeOff = (Button) findViewById(R.id.take_off);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.more_options_menu, menu);
         return true;
     }
 
@@ -135,9 +151,7 @@ public class MainActivity extends FragmentActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+
 
         return super.onOptionsItemSelected(item);
     }
